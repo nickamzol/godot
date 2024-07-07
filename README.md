@@ -1,3 +1,9 @@
+> [!NOTE]
+> This is a fork with support for custom camera projections.
+>
+> It integrates pull request [84454](https://github.com/godotengine/godot/pull/84454)
+> into the latest main branch (v4.3-beta.2).
+
 # Godot Engine
 
 <p align="center">
@@ -25,7 +31,8 @@ community-driven, empowering users to help shape their engine to match their
 expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
 not-for-profit.
 
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
+Before being open sourced
+in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
 Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
 [Ariel Manzur](https://github.com/punto-) (both still maintaining the project)
 for several years as an in-house engine, used to publish several work-for-hire
