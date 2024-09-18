@@ -3123,7 +3123,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_input) {
+	if (disable_input || disable_input_internal) {
 		return;
 	}
 
@@ -3195,7 +3195,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 	local_input_handled = false;
 
-	if (disable_input || !_can_consume_input_events()) {
+	if (disable_input || disable_input_internal || !_can_consume_input_events()) {
 		return;
 	}
 
@@ -3298,7 +3298,7 @@ void Viewport::set_disable_input(bool p_disable) {
 	if (p_disable == disable_input) {
 		return;
 	}
-	if (p_disable) {
+	if (p_disable && !disable_input_internal) {
 		_drop_mouse_focus();
 		_mouse_leave_viewport();
 		_gui_cancel_tooltip();
@@ -3309,6 +3309,19 @@ void Viewport::set_disable_input(bool p_disable) {
 bool Viewport::is_input_disabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return disable_input;
+}
+
+void Viewport::set_disable_input_internal(bool p_disable) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_disable == disable_input_internal) {
+		return;
+	}
+	if (p_disable && !disable_input) {
+		_drop_mouse_focus();
+		_mouse_leave_viewport();
+		_gui_cancel_tooltip();
+	}
+	disable_input_internal = p_disable;
 }
 
 Variant Viewport::gui_get_drag_data() const {

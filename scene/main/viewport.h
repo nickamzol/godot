@@ -401,6 +401,7 @@ private:
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	bool disable_input = false;
+	bool disable_input_internal = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -579,6 +580,8 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_disable_input_internal(bool p_disable);
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
