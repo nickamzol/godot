@@ -87,6 +87,12 @@ Input *Input::get_singleton() {
 
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
+
+	if (!active) {
+		active_mouse_mode = p_mode;
+		return;
+	}
+
 	set_mouse_mode_func(p_mode);
 }
 
@@ -252,6 +258,10 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
+	if (!active) {
+		return false;
+	}
+
 	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
 		return true;
 	}
@@ -267,21 +277,41 @@ bool Input::is_anything_pressed() const {
 
 bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return false;
+	}
+
 	return keys_pressed.has(p_keycode);
 }
 
 bool Input::is_physical_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return false;
+	}
+
 	return physical_keys_pressed.has(p_keycode);
 }
 
 bool Input::is_key_label_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return false;
+	}
+
 	return key_label_pressed.has(p_keycode);
 }
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return false;
+	}
+
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
@@ -295,11 +325,21 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return false;
+	}
+
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (!active) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -310,6 +350,11 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (!active) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -331,6 +376,11 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (!active) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -352,6 +402,11 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (!active) {
+		return 0.0f;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -366,6 +421,11 @@ float Input::get_action_strength(const StringName &p_action, bool p_exact) const
 
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (!active) {
+		return 0.0f;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -410,6 +470,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
+
+	if (!active) {
+		return 0;
+	}
+
 	JoyAxis c = _combine_device(p_axis, p_device);
 	if (_joy_axis.has(c)) {
 		return _joy_axis[c];
@@ -1660,6 +1725,21 @@ int Input::get_unused_joy_id() {
 		}
 	}
 	return -1;
+}
+
+void Input::set_active(bool p_active) {
+	if (p_active == active) {
+		return;
+	}
+
+	active = p_active;
+
+	if (p_active) {
+		set_mouse_mode_func(active_mouse_mode);
+	} else {
+		active_mouse_mode = get_mouse_mode_func();
+		set_mouse_mode_func(MOUSE_MODE_VISIBLE);
+	}
 }
 
 Input::Input() {
